@@ -23,6 +23,14 @@ public class Like {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "tweet_id", nullable = false)
+    private Tweet tweet;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

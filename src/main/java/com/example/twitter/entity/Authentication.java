@@ -28,4 +28,8 @@ public class Authentication {
     @Column(name = "expires_at")
     @NotNull(message = "Expire date can not be null.")
     private LocalDateTime expiresAt;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private User user;
 }

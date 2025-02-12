@@ -1,5 +1,6 @@
 package com.example.twitter.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -31,18 +33,22 @@ public class Tweet {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"tweets", "comments", "likes", "retweets", "password", "email", "createdAt", "updatedAt", "authentication", "enabled", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "authorities"})
     private User user;
 
-    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Comment> comments;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"tweet"})
+    private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Like> likes;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"tweet"})
+    private List<Like> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Retweet> retweets;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"tweet"})
+    private List<Retweet> retweets = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

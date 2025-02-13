@@ -1,18 +1,22 @@
 package com.example.twitter.controller;
 
 import com.example.twitter.entity.Tweet;
-import com.example.twitter.service.TweetService;
+import com.example.twitter.entity.User;
 import com.example.twitter.service.TweetServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/tweets")
+@CrossOrigin
 public class TweetController {
 
-    private TweetServiceImpl tweetService;
+    private final TweetServiceImpl tweetService;
 
     @Autowired
     public TweetController(TweetServiceImpl tweetService) {
@@ -20,12 +24,36 @@ public class TweetController {
     }
 
     @PostMapping
-    public Tweet createTweet(@RequestBody Tweet tweet) {
-        return tweetService.createTweet(tweet);
+    @Transactional
+    public ResponseEntity<Tweet> createTweet(@RequestBody Tweet tweet, @AuthenticationPrincipal User user) {
+        tweet.setUser(user);
+        Tweet createdTweet = tweetService.createTweet(tweet);
+        return ResponseEntity.ok(createdTweet);
+    }
+
+    @GetMapping
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Tweet>> getAllTweets() {
+        return ResponseEntity.ok(tweetService.getAllTweets());
+    }
+
+    @GetMapping("/{tweetId}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Tweet> getTweetById(@PathVariable Long tweetId) {
+        return ResponseEntity.ok(tweetService.getTweetById(tweetId));
     }
 
     @GetMapping("/user/{userId}")
-    public List<Tweet> getTweetsByUserId(@PathVariable Long userId) {
-        return tweetService.getTweetsByUserId(userId);
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Tweet>> getTweetsByUserId(@PathVariable Long userId) {
+        List<Tweet> tweets = tweetService.getTweetsByUserId(userId);
+        return ResponseEntity.ok(tweets);
+    }
+
+    @DeleteMapping("/{tweetId}")
+    @Transactional
+    public ResponseEntity<Void> deleteTweet(@PathVariable Long tweetId, @AuthenticationPrincipal User user) {
+        tweetService.deleteTweet(tweetId, user);
+        return ResponseEntity.ok().build();
     }
 }

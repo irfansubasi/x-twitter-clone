@@ -26,6 +26,9 @@ public class TweetController {
     @PostMapping
     @Transactional
     public ResponseEntity<Tweet> createTweet(@RequestBody Tweet tweet, @AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         tweet.setUser(user);
         Tweet createdTweet = tweetService.createTweet(tweet);
         return ResponseEntity.ok(createdTweet);
@@ -34,7 +37,11 @@ public class TweetController {
     @GetMapping
     @Transactional(readOnly = true)
     public ResponseEntity<List<Tweet>> getAllTweets() {
-        return ResponseEntity.ok(tweetService.getAllTweets());
+        List<Tweet> tweets = tweetService.getAllTweets();
+        if (tweets.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(tweets);
     }
 
     @GetMapping("/{tweetId}")
@@ -47,12 +54,18 @@ public class TweetController {
     @Transactional(readOnly = true)
     public ResponseEntity<List<Tweet>> getTweetsByUserId(@PathVariable Long userId) {
         List<Tweet> tweets = tweetService.getTweetsByUserId(userId);
+        if (tweets.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(tweets);
     }
 
     @DeleteMapping("/{tweetId}")
     @Transactional
     public ResponseEntity<Void> deleteTweet(@PathVariable Long tweetId, @AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         tweetService.deleteTweet(tweetId, user);
         return ResponseEntity.ok().build();
     }

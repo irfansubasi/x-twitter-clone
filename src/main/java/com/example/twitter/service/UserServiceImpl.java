@@ -1,8 +1,10 @@
 package com.example.twitter.service;
 
 import com.example.twitter.entity.User;
+import com.example.twitter.exception.UserException;
 import com.example.twitter.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserException("User not found with username: " + username, HttpStatus.NOT_FOUND));
     }
 }

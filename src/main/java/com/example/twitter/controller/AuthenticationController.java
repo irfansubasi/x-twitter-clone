@@ -3,10 +3,13 @@ package com.example.twitter.controller;
 import com.example.twitter.dto.auth.AuthenticationRequest;
 import com.example.twitter.dto.auth.AuthenticationResponse;
 import com.example.twitter.dto.auth.RegisterRequest;
+import com.example.twitter.exception.UnauthorizedException;
 import com.example.twitter.service.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +29,15 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
+
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody @Valid AuthenticationRequest request) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        try {
+            return ResponseEntity.ok(authenticationService.authenticate(request));
+        } catch (BadCredentialsException e) {
+            throw new UnauthorizedException("Invalid credentials: ", HttpStatus.FORBIDDEN);
+        }
     }
 } 

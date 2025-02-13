@@ -1,31 +1,42 @@
 package com.example.twitter.controller;
 
 import com.example.twitter.entity.Comment;
-import com.example.twitter.service.CommentService;
+import com.example.twitter.entity.User;
 import com.example.twitter.service.CommentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
+@CrossOrigin
 public class CommentController {
 
-    private CommentServiceImpl commentService;
+    private final CommentServiceImpl commentService;
 
     @Autowired
     public CommentController(CommentServiceImpl commentService) {
+
         this.commentService = commentService;
+
     }
 
     @PostMapping
-    public Comment createComment(@RequestBody Comment comment) {
-        return commentService.createComment(comment);
+    @Transactional
+    public ResponseEntity<Comment> createComment(@RequestBody Comment comment, @AuthenticationPrincipal User user) {
+        comment.setUser(user);
+        Comment createdComment = commentService.createComment(comment);
+        return ResponseEntity.ok(createdComment);
     }
 
     @GetMapping("/tweet/{tweetId}")
-    public List<Comment> getCommentsByTweetId(@PathVariable Long tweetId) {
-        return commentService.getCommentsByTweetId(tweetId);
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Comment>> getCommentsByTweetId(@PathVariable Long tweetId) {
+        List<Comment> comments = commentService.getCommentsByTweetId(tweetId);
+        return ResponseEntity.ok(comments);
     }
 }
